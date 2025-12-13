@@ -1,0 +1,35 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    compileSdkVersion 36
+    namespace 'lab.galaxy.yahfa'
+    defaultConfig {
+        minSdkVersion 28
+        targetSdkVersion 36
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=none"
+            }
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+        }
+    }
+    buildFeatures {
+        prefab true
+    }
+
+    packagingOptions {
+        exclude "**/libdlfunc.so"
+    }
+}
+
+dependencies {
+    implementation 'io.github.rk700:dlfunc:0.1.0'
+}
+
