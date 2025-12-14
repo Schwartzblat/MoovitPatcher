@@ -6,7 +6,6 @@ from ultimate_patcher.apk_utils import extract_apk, compile_apk, sign_apk
 from artifactory import prepare_artifactory
 from ultimate_patcher.common import EXTRACTED_PATH, SMALI_GENERATOR_TEMP_PATH
 from ultimate_patcher.patcher import patch_apk
-from downloader import download_latest_whatsapp
 
 
 def get_args():
