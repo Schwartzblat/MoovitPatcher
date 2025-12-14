@@ -10,7 +10,7 @@ Moovit patcher is a program that patches Moovit apk and bundles(!!).
 
 ## Requirements
 1. Python3
-2. Java installed
+2. JDK 17+
 
 ## Installation
 
@@ -48,3 +48,7 @@ If you want to add patches you can open an issue and I will implement it, or you
 ## Disclaimer
 
 For educational purpose only or something like that. I am not responsible for any misuse of this software.
+
+## Credits
+I took the 0auth bypass method (with your own Google-Api key) from this great project:
+https://github.com/Tom-stack3/moovit-patcher, so give him a star too :)
