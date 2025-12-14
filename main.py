@@ -31,11 +31,6 @@ def clean_up(args):
 
 def main():
     args = get_args()
-    if args.apk_path == 'latest':
-        args.apk_path = download_latest_whatsapp('Latest-WhatsApp.apk')
-        if not args.apk_path:
-            print('[-] Failed to download latest WhatsApp APK')
-            exit(1)
     try:
         print('[+] Extracting APK...')
         extract_apk(Path(args.apk_path), Path(args.temp_path))
