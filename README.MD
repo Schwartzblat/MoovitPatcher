@@ -34,7 +34,7 @@ To get a Google API key, follow these steps:
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
 2. Create a new project or select an existing one.
 3. Navigate to the "APIs & Services" section.
-4. Click on "Enable APIs and Services" and search for the "Maps SDK for Android".
+4. Click on "Enable APIs and Services" and search for the "Maps SDK for Android" and for "Places API".
 5. Enable the API for your project.
 6. Go to the "Credentials" tab and click on "Create Credentials".
 7. Select "API Key" from the dropdown menu.
