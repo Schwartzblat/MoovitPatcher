@@ -45,7 +45,7 @@ def main():
         compile_apk(Path(args.temp_path) / EXTRACTED_PATH, Path(args.output))
 
         print('[+] Signing APK...')
-        sign_apk(Path(args.temp_path), (args.apk_path), Path(args.output), Path('signed_' + args.output))
+        sign_apk(Path(args.temp_path), args.apk_path, Path(args.output), Path('signed_' + args.output))
     finally:
         print('[+] Cleaning up...')
         clean_up(args)
