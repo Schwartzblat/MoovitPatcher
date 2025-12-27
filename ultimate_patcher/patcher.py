@@ -39,7 +39,12 @@ def patch_artifacts(artifactory: Path, smali_generator_temp_path: Path) -> None:
 def prepare_smali(temp_path: Path, artifactory: Path, external_module: Path) -> None:
     smali_generator_temp_path = temp_path / SMALI_GENERATOR_TEMP_PATH
     print('[+] Copying the smali generator...')
-    shutil.copytree(external_module, smali_generator_temp_path)
+    shutil.copytree(external_module, smali_generator_temp_path,
+                    ignore=shutil.ignore_patterns(
+                    "build",
+                    ".gradle",
+                    "*.dex",
+                    "*.apk"))
     print('[+] Patching the artifacts...')
     patch_artifacts(artifactory, smali_generator_temp_path)
     print('[+] Assembling the java...')
