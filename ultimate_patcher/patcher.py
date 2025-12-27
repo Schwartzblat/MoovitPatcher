@@ -43,7 +43,13 @@ def prepare_smali(temp_path: Path, artifactory: Path, external_module: Path) -> 
     print('[+] Patching the artifacts...')
     patch_artifacts(artifactory, smali_generator_temp_path)
     print('[+] Assembling the java...')
-    subprocess.check_call(['./gradlew', 'assembleRelease'], cwd=smali_generator_temp_path)
+    gradle_script = 'gradlew.bat' if os.name == "nt" else "./gradlew"
+    # Run with shell=True on Windows in order to use cmd.exe, which will include CWD var in search for gradlew.bat
+    subprocess.check_call(
+        [gradle_script, 'assembleRelease'],
+        cwd=str(smali_generator_temp_path),
+        shell=os.name == "nt",
+    )
     print('[+] Extracting the smali...')
     extract_apk(smali_generator_temp_path / SMALI_GENERATOR_OUTPUT_PATH, temp_path,
                 smali_generator_temp_path / SMALI_EXTRACTED_PATH)
