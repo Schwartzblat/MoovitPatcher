@@ -95,9 +95,10 @@ def add_static_call_to_on_load(temp_path: Path, class_name: str, function_name: 
 
 
 def patch_entries(apk_path: Path, temp_path: Path) -> None:
+    from ultimate_patcher.apk_utils import main_apk_name
     print('[+] Searching for activities with entry points...')
     activities_to_patch = get_activities_with_entry_points(
-        Path(temp_path) / BUNDLE_APK_EXTRACTED_PATH / 'base.apk' if is_bundle(
+        Path(temp_path) / BUNDLE_APK_EXTRACTED_PATH / main_apk_name if is_bundle(
             apk_path) else apk_path)
     print(f'[+] Found {len(activities_to_patch)} activities with entry points')
     for activity in activities_to_patch:
@@ -165,7 +166,8 @@ def patch_apk(apk_path: Path, temp_path: Path, artifactory: Path, external_modul
     if api_key is not None:
         print('[+] Patching google api key...')
         if is_bundle(apk_path):
-            package_name = APK(str(temp_path / BUNDLE_APK_EXTRACTED_PATH / 'base.apk')).get_package()
+            from ultimate_patcher.apk_utils import main_apk_name
+            package_name = APK(str(temp_path / BUNDLE_APK_EXTRACTED_PATH / main_apk_name)).get_package()
         else:
             package_name = APK(str(apk_path)).get_package()
         patch_google_api_key(temp_path, package_name, api_key)

@@ -16,6 +16,10 @@ Moovit patcher is a program that patches Moovit apk and bundles(!!).
 
 ```bash
 git clone https://github.com/Schwartzblat/MoovitPatcher.git
+
+cd MoovitPatcher
+
+git submodule update --init --recursive
 ```
 Requirements installation:
 ```bash

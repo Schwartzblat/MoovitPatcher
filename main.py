@@ -10,7 +10,7 @@ from ultimate_patcher.patcher import patch_apk
 
 def get_args():
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument('-p', '--apk-path', dest='apk_path', help='APK path', required=False, default='latest')
+    parser.add_argument('-p', '--apk-path', dest='apk_path', help='APK path', required=True)
     parser.add_argument('-o', '--output', dest='output', help='Output APK path', required=False, default='output.apk')
     parser.add_argument('-t', '--temp', dest='temp_path', help='Temp path for extracted content', required=False,
                         default='./temp')
@@ -45,7 +45,7 @@ def main():
         compile_apk(Path(args.temp_path) / EXTRACTED_PATH, Path(args.output))
 
         print('[+] Signing APK...')
-        sign_apk(Path(args.temp_path), (args.apk_path), Path(args.output), Path('signed_' + args.output))
+        sign_apk(Path(args.temp_path), args.apk_path, Path(args.output), Path('signed_' + args.output))
     finally:
         print('[+] Cleaning up...')
         clean_up(args)
