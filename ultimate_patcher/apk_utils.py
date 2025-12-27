@@ -8,6 +8,22 @@ import zipfile
 import yaml
 from ultimate_patcher.common import APKTOOL_PATH, UBER_APK_SIGNER_PATH, EXTRACTED_PATH, BUNDLE_APK_EXTRACTED_PATH
 
+SIGNED_SUFFIXES = (
+    "-aligned-signed.apk",
+    "-aligned-debugSigned.apk",
+)
+
+def find_signed_apk(base_apk: str) -> str:
+    """
+    Given an APK path without the signed suffix, find the signed APK produced by uber-apk-signer.
+    """
+    for suffix in SIGNED_SUFFIXES:
+        candidate = f'{base_apk.removesuffix(".apk")}{suffix}'
+        if os.path.exists(candidate):
+            return candidate
+    raise FileNotFoundError(
+        f"No signed APK found for {base_apk}. Tried: {SIGNED_SUFFIXES}"
+    )
 
 def is_bundle(path: os.PathLike) -> bool:
     with zipfile.ZipFile(path, 'r') as zip_file:
@@ -86,14 +102,11 @@ def sign_apk(temp_path: Path, original_apk_path: Path, apk_path: Path, output_pa
         args.extend(['--allowResign', '--apks', file])
         subprocess.check_call(args, timeout=20 * 60)
         os.remove(file)
+        signed_apk = find_signed_apk(file)
         if is_bundle(original_apk_path):
-            os.rename(
-                f'{file.removesuffix(".apk")}-aligned-signed.apk',
-                f'{file.removesuffix(".apk")}.apk',
-            )
-
+            os.rename(signed_apk, file)
         else:
-            os.rename(f'{str(apk_path).removesuffix(".apk")}-aligned-signed.apk', output_path)
+            os.rename(signed_apk, output_path)
 
     if is_bundle(original_apk_path):
         shutil.move(apk_path, temp_path / BUNDLE_APK_EXTRACTED_PATH / 'base.apk')
