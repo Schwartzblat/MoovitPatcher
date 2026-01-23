@@ -24,6 +24,8 @@ git submodule update --init --recursive
 Requirements installation:
 ```bash
 pip install -r requirements.txt
+# Until stitch is available on PyPI
+pip install --index-url https://test.pypi.org/simple/ stitch-test -U
 ```
 ## Usage
 
