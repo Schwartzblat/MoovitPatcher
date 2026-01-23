@@ -1,11 +1,6 @@
 import argparse
-import shutil
-import os
-from pathlib import Path
-from ultimate_patcher.apk_utils import extract_apk, compile_apk, sign_apk
-from artifactory import prepare_artifactory
-from ultimate_patcher.common import EXTRACTED_PATH, SMALI_GENERATOR_TEMP_PATH
-from ultimate_patcher.patcher import patch_apk
+from stitch import Stitch
+from artifactory_generator.subscription_manager import SubscriptionManager
 
 
 def get_args():
@@ -14,41 +9,27 @@ def get_args():
     parser.add_argument('-o', '--output', dest='output', help='Output APK path', required=False, default='output.apk')
     parser.add_argument('-t', '--temp', dest='temp_path', help='Temp path for extracted content', required=False,
                         default='./temp')
-    parser.add_argument('-g', '--google-api-key', dest='api_key', help='Custom google api key', required=False)
-    parser.add_argument('--arch', dest='arch', help='Architecture', required=False, default='arm64-v8a',
-                        choices=['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'])
+    parser.add_argument('-g', '--google-api-key', dest='api_key', help='Custom google api key', required=False,
+                        default=None)
     parser.add_argument('--artifactory', dest='artifactory', help='Artifactory path', required=False,
                         default='./artifactory.json')
     return parser.parse_args()
 
 
-def clean_up(args):
-    shutil.rmtree(args.temp_path, ignore_errors=True)
-    if os.path.exists(args.artifactory):
-        os.remove(args.artifactory)
-    shutil.rmtree('./bundle_apks', ignore_errors=True)
-
-
 def main():
     args = get_args()
-    try:
-        print('[+] Extracting APK...')
-        extract_apk(Path(args.apk_path), Path(args.temp_path))
-
-        print('[+] Finding artifacts...')
-        prepare_artifactory(args)
-
-        print('[+] Patching APK...')
-        patch_apk(Path(args.apk_path), Path(args.temp_path), Path(args.artifactory), Path(SMALI_GENERATOR_TEMP_PATH),
-                  args.arch, args.api_key)
-        print('[+] Compiling APK...')
-        compile_apk(Path(args.temp_path) / EXTRACTED_PATH, Path(args.output))
-
-        print('[+] Signing APK...')
-        sign_apk(Path(args.temp_path), args.apk_path, Path(args.output), Path('signed_' + args.output))
-    finally:
-        print('[+] Cleaning up...')
-        clean_up(args)
+    artifactory_list = [
+        SubscriptionManager(args),
+    ]
+    with Stitch(
+            apk_path=args.apk_path,
+            output_apk=args.output,
+            temp_path=args.temp_path,
+            artifactory_list=artifactory_list,
+            google_api_key=args.api_key,
+            external_module='./smali_generator'
+    ) as stitch:
+        stitch.patch()
 
 
 if __name__ == '__main__':
