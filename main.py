@@ -18,11 +18,25 @@ def get_args():
                         default='./artifactory.json')
     parser.add_argument('--no-sign', dest='should_sign', help='Whether to sign the output APK', action='store_false',
                         required=False, default=True)
-    return parser.parse_args()
+    parser.add_argument('--extra-artifacts', dest='extra_artifacts',
+                        help='Extra artifact to add to the artifactory, in the format "key:value"',
+                        required=False, default=[], nargs='+')
+    parser.add_argument('--paywall', dest='paywall', help='Whether to add the paywall patch', required=False,
+                        default=None)
+    args, _ = parser.parse_known_args()
+    return args
 
 
 def main():
     args = get_args()
+    extra_artifacts = {artifact.split(':')[0]: artifact.split(':')[1] for artifact in args.extra_artifacts}
+    external_modules = [
+        ExternalModule(Path(__file__).parent / './smali_generator',
+                       'invoke-static {}, Lcom/smali_generator/TheAmazingPatch;->on_load()V')
+    ]
+    if args.paywall is not None:
+        external_modules.append(ExternalModule(Path(args.paywall),
+                                               'invoke-static {}, Lcom/paywall/Paywall;->on_load()V'))
     artifactory_list = [
         SubscriptionManager(args),
     ]
@@ -32,9 +46,9 @@ def main():
             temp_path=args.temp_path,
             artifactory_list=artifactory_list,
             google_api_key=args.api_key,
-            external_modules=[ExternalModule(Path('./smali_generator'),
-                                             'invoke-static {}, Lcom/smali_generator/TheAmazingPatch;->on_load()V')],
+            external_modules=external_modules,
             should_sign=args.should_sign,
+            extra_artifacts=extra_artifacts,
     ) as stitch:
         stitch.patch()
 
