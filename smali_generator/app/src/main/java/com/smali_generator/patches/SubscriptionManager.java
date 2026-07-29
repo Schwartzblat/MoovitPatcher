@@ -6,7 +6,7 @@ import com.smali_generator.Hook;
 
 import java.lang.reflect.Method;
 
-import lab.galaxy.yahfa.HookMain;
+import com.arthooks.ArtHooks;
 
 
 public class SubscriptionManager implements Hook {
@@ -20,7 +20,7 @@ public class SubscriptionManager implements Hook {
             Class<?> subscription_manager_class = Class.forName("{{SUBSCRIPTION_MANAGER_CLASS_NAME}}");
             Method is_subscribed_hook = SubscriptionManager.class.getDeclaredMethod("is_subscribed", Object.class);
             Method original_is_subscribed = subscription_manager_class.getDeclaredMethod("{{SUBSCRIPTION_MANAGER_METHOD_NAME}}");
-            HookMain.hook(original_is_subscribed, is_subscribed_hook);
+            ArtHooks.hook_function(original_is_subscribed, is_subscribed_hook);
         } catch (Exception e) {
             Log.e("PATCH", "SubscriptionManager: " + e.toString());
         }
