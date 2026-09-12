@@ -4,6 +4,18 @@ from pathlib import Path
 from stitch import Stitch
 from stitch.common import ExternalModule
 from artifactory_generator.subscription_manager import SubscriptionManager
+# premium / subscription state
+from artifactory_generator.premium_state import PremiumState
+from artifactory_generator.premium_feature_packages import PremiumFeaturePackages
+# paywall / feature gates
+from artifactory_generator.block_paywall import BlockPaywall
+# ad loaders (com.moovit.ads)
+# app ad layer (com.moovit.app.ads)
+from artifactory_generator.app_ad_unit_id_resolver import AppAdUnitIdResolver
+from artifactory_generator.app_ad_source_age_gate import AppAdSourceAgeGate
+from artifactory_generator.app_ad_view_show import AppAdViewShow
+from artifactory_generator.app_banner_ad_load import AppBannerAdLoad
+from artifactory_generator.app_map_ads_layer import AppMapAdsLayer
 
 
 def get_args():
@@ -39,6 +51,14 @@ def main():
                                                'com.paywall.Paywall'))
     artifactory_list = [
         SubscriptionManager(args),
+        PremiumState(args),
+        PremiumFeaturePackages(args),
+        BlockPaywall(args),
+        AppAdUnitIdResolver(args),
+        AppAdSourceAgeGate(args),
+        AppAdViewShow(args),
+        AppBannerAdLoad(args),
+        AppMapAdsLayer(args),
     ]
     with Stitch(
             apk_path=args.apk_path,

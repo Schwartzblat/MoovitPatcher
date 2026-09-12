@@ -20,6 +20,14 @@ android {
             minifyEnabled false
         }
     }
+
+    // This module reflects into the host app by design, and its class literals are
+    // unsubstituted templates until patch time. PrivateApiDetector resolves those as
+    // Java types and crashes on anything unparseable -- a placeholder, or an obfuscated
+    // name like X.7WU -- which fails the build from inside lint itself.
+    lint {
+        disable 'PrivateApi', 'BlockedPrivateApi', 'DiscouragedPrivateApi', 'SoonBlockedPrivateApi'
+    }
 }
 
 dependencies {

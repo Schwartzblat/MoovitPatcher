@@ -10,6 +10,14 @@ import androidx.annotation.NonNull;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import com.smali_generator.patches.SubscriptionManager;
+import com.smali_generator.patches.PremiumState;
+import com.smali_generator.patches.PremiumFeaturePackages;
+import com.smali_generator.patches.BlockPaywall;
+import com.smali_generator.patches.AppAdUnitIdResolver;
+import com.smali_generator.patches.AppAdSourceAgeGate;
+import com.smali_generator.patches.AppAdViewShow;
+import com.smali_generator.patches.AppBannerAdLoad;
+import com.smali_generator.patches.AppMapAdsLayer;
 
 
 @SuppressWarnings("unused")
@@ -29,7 +37,19 @@ public class InitProviderMoovit extends ContentProvider {
     @Override public int update(@NonNull Uri u, ContentValues v, String s, String[] a) { return 0; }
 
     static Hook[] hooks = {
+            // premium / subscription state
             new SubscriptionManager(),
+            new PremiumState(),
+            new PremiumFeaturePackages(),
+            // paywall / feature gates
+            new BlockPaywall(),
+            // ad loaders (com.moovit.ads)
+            // app ad layer (com.moovit.app.ads)
+            new AppAdUnitIdResolver(),
+            new AppAdSourceAgeGate(),
+            new AppAdViewShow(),
+            new AppBannerAdLoad(),
+            new AppMapAdsLayer(),
     };
 
     static AtomicBoolean is_loaded = new AtomicBoolean(false);
@@ -39,13 +59,17 @@ public class InitProviderMoovit extends ContentProvider {
             return;
         }
 
-        Log.e("PATCH", "Patch loaded!");
-        try {
-            for (Hook hook : hooks) {
+        Log.i("PATCH", "Patch loaded, running " + hooks.length + " hook(s)");
+        // Per-hook isolation: one hook that dies must not stop the rest. Throwable,
+        // not Exception -- a missing native lib raises UnsatisfiedLinkError, which
+        // would otherwise escape onCreate and take the host app down at startup.
+        for (Hook hook : hooks) {
+            String name = hook.getClass().getSimpleName();
+            try {
                 hook.load();
+            } catch (Throwable t) {
+                Log.e("PATCH", name + ": load() threw, continuing with remaining hooks: " + t);
             }
-        } catch (Exception e) {
-            Log.e("PATCH", "Error: " + e.getMessage());
         }
     }
 }
