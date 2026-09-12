@@ -32,7 +32,7 @@ def main():
     extra_artifacts = {artifact.split(':')[0]: artifact.split(':')[1] for artifact in args.extra_artifacts}
     external_modules = [
         ExternalModule(Path(__file__).parent / './smali_generator',
-                       'com.smali_generator.InitProvider')
+                       'com.smali_generator.InitProviderMoovit')
     ]
     if args.paywall is not None:
         external_modules.append(ExternalModule(Path(args.paywall),

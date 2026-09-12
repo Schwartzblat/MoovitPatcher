@@ -13,11 +13,11 @@ import com.smali_generator.patches.SubscriptionManager;
 
 
 @SuppressWarnings("unused")
-public class InitProvider extends ContentProvider {
+public class InitProviderMoovit extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        Log.i("PATCH", "InitProvider: onCreate called");
+        Log.i("PATCH", "InitProviderMoovit: onCreate called");
         on_load();
         return true;
     }
