@@ -40,8 +40,7 @@ class PremiumFeaturePackages(SimpleArtifactoryFinder):
         r'(?:(?!\.end method)[\s\S])*?sget-object \w+, L(?P=state_class);->\w+:')
 
     ACTIVE_STATE_RE = re.compile(
-        ACTIVE_ANALYTICS_CONSTANT +
-        r'(?:(?!\.end method)[\s\S])*?'
+        ACTIVE_ANALYTICS_CONSTANT + r'(?:(?!\.end method)[\s\S])*?'
         r'sput-object \w+, L(?P<state_class>[\w/$]+);->(?P<active_field>\w+):L(?P=state_class);')
 
     def __init__(self, args):
