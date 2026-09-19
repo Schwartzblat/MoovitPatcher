@@ -18,6 +18,13 @@ from artifactory_generator.app_banner_ad_load import AppBannerAdLoad
 from artifactory_generator.app_map_ads_layer import AppMapAdsLayer
 
 
+# Stitch writes this into the target's manifest as the provider's android:name,
+# and the paywall module generates a class of that name from PAYWALL_PROVIDER_CLASS.
+# Both are derived from this one constant so they cannot drift: a manifest naming
+# a class that is not in the dex installs fine and dies at launch.
+PAYWALL_PROVIDER = 'com.paywall.InitProviderPaywallMoovit'
+
+
 def get_args():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('-p', '--apk-path', dest='apk_path', help='APK path', required=True)
@@ -47,8 +54,8 @@ def main():
                        'com.smali_generator.InitProviderMoovit')
     ]
     if args.paywall is not None:
-        external_modules.append(ExternalModule(Path(args.paywall),
-                                               'com.paywall.Paywall'))
+        extra_artifacts.setdefault('PAYWALL_PROVIDER_CLASS', PAYWALL_PROVIDER.rsplit('.', 1)[1])
+        external_modules.append(ExternalModule(Path(args.paywall), PAYWALL_PROVIDER))
     artifactory_list = [
         SubscriptionManager(args),
         PremiumState(args),
