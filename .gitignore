@@ -196,3 +196,6 @@ script.js
 
 # Scratch space for APK extraction and analysis (skill work dir)
 /.patcher-work/
+
+# Visual Studio Code (vscode)
+.vscode/
