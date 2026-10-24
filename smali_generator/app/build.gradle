@@ -33,6 +33,10 @@ android {
 dependencies {
     implementation libs.arthooks
     implementation libs.androidx.annotation.jvm
+
+    // JVM unit tests for the pure-Java parts of the Google API fix. Parcel, Bundle
+    // and Log do not exist off-device, so the binder and hooks are verified on a device.
+    testImplementation libs.junit
 }
 
 tasks.whenTaskAdded { task ->

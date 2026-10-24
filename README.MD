@@ -7,6 +7,7 @@ Moovit patcher is a program that patches Moovit apk and bundles(!!).
 |:------------------------------:|:------------:|
 |             No Ads             |      ✔       |
 |         Live Location          |      ✔       |
+|   Maps with Moovit's own key   |      ✔       |
 
 ## Requirements
 1. Python3
@@ -28,15 +29,35 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-python main.py -p ./moovit.apkm -g YOUR_GOOGLE_API_KEY
+python main.py -p ./moovit.apkm
 
 unzip -q ./output.apk -d output_bundle_apks
 
 adb install-multiple output_bundle_apks/*.apk
 ```
 
+Maps and Places work with Moovit's own key. Google ties that key to Moovit's original certificate, and
+the re-signed app would present its new one, so the patch puts the original back where Google reads it:
+it answers the Maps SDK's token request in-process, asking Google with the original certificate, and
+swaps it into the `X-Android-Cert` header of the app's own `HttpURLConnection` requests (Places,
+Geolocation, Firebase Remote Config). `main.py` reads the original certificate from the input APK or
+bundle. `--no-original-cert` turns all of this off.
+
+Requests made through OkHttp, Cronet or gRPC keep the re-signed certificate (Street View goes through
+Ktor), and the token fix always answers in-process, so a change to Google's token service breaks the
+map until the patch is updated.
+
+## Tests
+
+```bash
+pip install -r requirements.txt pytest
+python -m pytest tests -q
+cd smali_generator && ./gradlew testReleaseUnitTest
+```
+
 ## Google API Key
-To get a Google API key, follow these steps:
+Optional: with `-g YOUR_GOOGLE_API_KEY` the build carries your key instead, restricted to the patched
+certificate, and the certificate fix stays off. To get a Google API key, follow these steps:
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
 2. Create a new project or select an existing one.
 3. Navigate to the "APIs & Services" section.

@@ -16,6 +16,7 @@ from artifactory_generator.app_ad_source_age_gate import AppAdSourceAgeGate
 from artifactory_generator.app_ad_view_show import AppAdViewShow
 from artifactory_generator.app_banner_ad_load import AppBannerAdLoad
 from artifactory_generator.app_map_ads_layer import AppMapAdsLayer
+from artifactory_generator.original_cert import original_cert_sha1
 
 
 # Stitch writes this into the target's manifest as the provider's android:name,
@@ -23,6 +24,9 @@ from artifactory_generator.app_map_ads_layer import AppMapAdsLayer
 # Both are derived from this one constant so they cannot drift: a manifest naming
 # a class that is not in the dex installs fine and dies at launch.
 PAYWALL_PROVIDER = 'com.paywall.InitProviderPaywallMoovit'
+# The SHA-1 of the APK's original signing certificate. The module sends it to
+# Google in place of the re-signed one, for the Maps token and X-Android-Cert.
+ORIGINAL_CERT_KEY = 'ORIGINAL_CERT_SHA1'
 
 
 def get_args():
@@ -33,6 +37,9 @@ def get_args():
                         default='./temp')
     parser.add_argument('-g', '--google-api-key', dest='api_key', help='Custom google api key', required=False,
                         default=None)
+    parser.add_argument('--no-original-cert', dest='original_cert', action='store_false', default=True,
+                        help='Leave the re-signed certificate in Google API requests: '
+                             'no Maps token fix, no X-Android-Cert swap')
     parser.add_argument('--artifactory', dest='artifactory', help='Artifactory path', required=False,
                         default='./artifactory.json')
     parser.add_argument('--no-sign', dest='should_sign', help='Whether to sign the output APK', action='store_false',
@@ -49,6 +56,18 @@ def get_args():
 def main():
     args = get_args()
     extra_artifacts = {artifact.split(':')[0]: artifact.split(':')[1] for artifact in args.extra_artifacts}
+    if args.original_cert and ORIGINAL_CERT_KEY not in extra_artifacts:
+        if args.api_key is not None:
+            # A key of your own is restricted to the patched certificate, so
+            # sending the original would get it refused.
+            print('custom Google API key: Google API fix off')
+        else:
+            cert = original_cert_sha1(args.apk_path)
+            if cert:
+                extra_artifacts[ORIGINAL_CERT_KEY] = cert
+                print(f'original certificate SHA-1: {cert}')
+            else:
+                print('original certificate not readable: Google API fix off')
     external_modules = [
         ExternalModule(Path(__file__).parent / './smali_generator',
                        'com.smali_generator.InitProviderMoovit')

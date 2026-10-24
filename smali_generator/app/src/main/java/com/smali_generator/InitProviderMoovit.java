@@ -2,6 +2,7 @@ package com.smali_generator;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
@@ -18,6 +19,10 @@ import com.smali_generator.patches.AppAdSourceAgeGate;
 import com.smali_generator.patches.AppAdViewShow;
 import com.smali_generator.patches.AppBannerAdLoad;
 import com.smali_generator.patches.AppMapAdsLayer;
+import com.smali_generator.patches.BindServiceHook;
+import com.smali_generator.patches.CertHeaderHook;
+import com.smali_generator.patches.MapsTokenHook;
+import com.smali_generator.utils.AppCert;
 
 
 @SuppressWarnings("unused")
@@ -26,7 +31,7 @@ public class InitProviderMoovit extends ContentProvider {
     @Override
     public boolean onCreate() {
         Log.i("PATCH", "InitProviderMoovit: onCreate called");
-        on_load();
+        on_load(getContext());
         return true;
     }
 
@@ -37,6 +42,8 @@ public class InitProviderMoovit extends ContentProvider {
     @Override public int update(@NonNull Uri u, ContentValues v, String s, String[] a) { return 0; }
 
     static Hook[] hooks = {
+            // owns bindService; MapsTokenHook registers a handler with it
+            new BindServiceHook(),
             // premium / subscription state
             new SubscriptionManager(),
             new PremiumState(),
@@ -50,13 +57,22 @@ public class InitProviderMoovit extends ContentProvider {
             new AppAdViewShow(),
             new AppBannerAdLoad(),
             new AppMapAdsLayer(),
+            // Google APIs with the original certificate: X-Android-Cert, and the
+            // Maps SDK's token service answered in-process
+            new CertHeaderHook(),
+            new MapsTokenHook(),
     };
 
     static AtomicBoolean is_loaded = new AtomicBoolean(false);
 
-    public static void on_load() {
+    public static void on_load(Context context) {
         if (is_loaded.getAndSet(true)) {
             return;
+        }
+        try {
+            AppCert.init(context);
+        } catch (Throwable t) {
+            Log.e("PATCH", "AppCert init failed: Google API fix off", t);
         }
 
         Log.i("PATCH", "Patch loaded, running " + hooks.length + " hook(s)");
