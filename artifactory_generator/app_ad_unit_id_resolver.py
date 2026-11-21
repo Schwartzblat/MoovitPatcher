@@ -15,15 +15,17 @@ class AppAdUnitIdResolver(SimpleArtifactoryFinder):
     Anchors:
       class  -- the remote config key literal "is_interstitial_ads_free_version"
                 (a wire key, unique to this class in the whole apk)
-      method -- the single (AdSource)String method whose body reads the
-                "is_ads_free_version" flag (the sibling fallback resolver has
-                the same signature but does not read it)
+      method -- the single (AdSource)String method whose body reads one of the
+                ads-free flags: "is_ads_free_version" up to 5.199, and since
+                5.201.1, when that one moved into its own ()Z,
+                "is_interstitial_ads_free_version" (the sibling fallback
+                resolver has the same signature but reads neither)
     """
 
     AD_UNIT_ID_RE = re.compile(
         r'\.method public final (?P<method_name>\w+)'
         r'(?P<sig>\(Lcom/moovit/app/ads/AdSource;\)Ljava/lang/String;)'
-        r'(?:(?!\.end method)[\s\S])*?"is_ads_free_version"')
+        r'(?:(?!\.end method)[\s\S])*?"is_(?:interstitial_)?ads_free_version"')
 
     def __init__(self, args):
         super().__init__(args)

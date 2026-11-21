@@ -7,8 +7,10 @@ class AppMapAdsLayer(SimpleArtifactoryFinder):
 
     The manager owns one sponsored MapItemCollection and one no-argument void
     method that decides whether it should currently be on the map: it reads the
-    map-ads feature flag plus the "is_ads_free_version" remote config flag and
-    then either registers the collection on the MapFragment or removes it again.
+    map-ads feature flag plus the ads-free state (the "is_ads_free_version"
+    remote config flag up to 5.199, the ads manager's own ads-free check
+    since 5.201.1) and then either registers the collection on the MapFragment or
+    removes it again.
     That method is the only place in the apk that registers this collection, so
     suppressing it keeps the sponsored map items off the map for good.
 
@@ -19,8 +21,7 @@ class AppMapAdsLayer(SimpleArtifactoryFinder):
                 constructs it, which is why the "-><init>(" suffix is part of the
                 anchor
       method -- the only ()V in the class, further pinned to the body that
-                touches com/moovit/map/MapFragment and reads the
-                "is_ads_free_version" flag
+                touches com/moovit/map/MapFragment
     """
 
     RECEIVER_ANCHOR = (
@@ -28,8 +29,7 @@ class AppMapAdsLayer(SimpleArtifactoryFinder):
 
     MAP_ADS_SYNC_RE = re.compile(
         r'\.method public final (?P<method_name>\w+)(?P<sig>\(\)V)'
-        r'(?:(?!\.end method)[\s\S])*?Lcom/moovit/map/MapFragment;'
-        r'(?:(?!\.end method)[\s\S])*?"is_ads_free_version"')
+        r'(?:(?!\.end method)[\s\S])*?Lcom/moovit/map/MapFragment;')
 
     def __init__(self, args):
         super().__init__(args)

@@ -19,14 +19,19 @@ class BlockPaywall(SimpleArtifactoryFinder):
     The holder class is anchored on its SharedPreferences keys, which are
     persisted data and therefore cannot be renamed: "user_acquisition" occurs
     in this class only, and it is paired with the "block_paywall" preference
-    file name. The predicate itself is pinned by its parameter type
-    ``com/moovit/MoovitActivity`` (a surviving Moovit class name) plus the
-    "block_paywall" literal inside the body.
+    file name. The predicate itself is pinned by its single parameter, a
+    surviving com.moovit activity class (``com/moovit/MoovitActivity`` up to
+    5.199, ``com/moovit/core/components/MoovitComponentActivity`` in 5.201.1),
+    plus the "block_paywall" literal inside the body.
+
+    Moovit removed the block paywall in 5.201.6: from then on no class carries
+    these keys, this finder never fires, and the hook logs that the feature is
+    absent instead of hooking.
     """
 
     IS_BLOCKED_RE = re.compile(
         r'\.method public static final (?P<method_name>\w+)'
-        r'(?P<sig>\(Lcom/moovit/MoovitActivity;\)Z)'
+        r'(?P<sig>\(Lcom/moovit/[\w/$]*Activity;\)Z)'
         r'(?:(?!\.end method)[\s\S])*?'
         r'"block_paywall"'
         r'(?:(?!\.end method)[\s\S])*?'

@@ -6,22 +6,23 @@ class AppAdViewShow(SimpleArtifactoryFinder):
     """com.moovit.app.ads.MoovitAdView's "build and request the banner" entry.
 
     The only method of the (non obfuscated) view class that takes
-    (MoovitApplication, MoovitBaseComponentActivity, AdSource, String adUnitId)
-    and returns void. Its body constructs a Google mobile-ads banner AdView,
-    calls load on it, adds it to the view's FrameLayout and reports the AD
-    analytics event. Every early-out inside it ends in the view's own
+    (MoovitApplication, <activity>, AdSource, String adUnitId) and returns void.
+    The activity was MoovitBaseComponentActivity up to 5.199 and has been
+    androidx ComponentActivity since 5.201.1. Its body constructs a Google
+    mobile-ads banner AdView, calls load on it, adds it to the view's
+    FrameLayout and reports the AD analytics event. Every early-out inside it ends in the view's own
     "removeAdView" path, so suppressing it is behaviour the class already
     supports.
 
     Anchors:
       class  -- the surviving class name com/moovit/app/ads/MoovitAdView
-      method -- the unique four argument signature, made of three
-                non-obfuscated com.moovit types plus String
+      method -- the unique four argument signature: MoovitApplication, any
+                activity class, AdSource and String
     """
 
     SHOW_RE = re.compile(
         r'\.method public final (?P<method_name>\w+)'
-        r'(?P<sig>\(Lcom/moovit/MoovitApplication;Lcom/moovit/MoovitBaseComponentActivity;'
+        r'(?P<sig>\(Lcom/moovit/MoovitApplication;L[\w/$]+;'
         r'Lcom/moovit/app/ads/AdSource;Ljava/lang/String;\)V)')
 
     def __init__(self, args):

@@ -23,23 +23,32 @@ import java.lang.reflect.Method;
  * user-acquisition experiment.
  *
  * The target is a STATIC method, so the replacement takes no leading thiz; its
- * single parameter is the com.moovit.MoovitActivity argument.
+ * single parameter is the activity argument.
+ *
+ * Moovit removed the block paywall in 5.201.6. On those releases the finder
+ * cannot fire, the class name below stays a template, and load() says the
+ * feature is absent instead of trying to hook it.
  */
 public class BlockPaywall implements Hook {
+    private static final String CLASS_NAME = "{{PAYWALL_BLOCK_CLASS_NAME}}";
     private static final String TARGET =
-            "{{PAYWALL_BLOCK_CLASS_NAME}}.{{PAYWALL_BLOCK_METHOD_NAME}}{{PAYWALL_BLOCK_METHOD_SIG}}";
+            CLASS_NAME + ".{{PAYWALL_BLOCK_METHOD_NAME}}{{PAYWALL_BLOCK_METHOD_SIG}}";
 
     static boolean is_block_paywall_active(Object activity) {
         return false;
     }
 
     public void load() {
+        if (CLASS_NAME.startsWith("{{")) {
+            Log.i("PATCH", "BlockPaywall: this Moovit has no block paywall, nothing to hook");
+            return;
+        }
         try {
             if (!ArtHooks.is_available()) {
                 Log.e("PATCH", "BlockPaywall: ArtHooks unavailable, " + TARGET + " NOT hooked");
                 return;
             }
-            Class<?> cls = Class.forName("{{PAYWALL_BLOCK_CLASS_NAME}}");
+            Class<?> cls = Class.forName(CLASS_NAME);
             Executable original = ArtHooks.find_function(cls,
                     "{{PAYWALL_BLOCK_METHOD_NAME}}", "{{PAYWALL_BLOCK_METHOD_SIG}}");
             if (original == null) {

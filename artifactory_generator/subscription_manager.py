@@ -3,8 +3,24 @@ from stitch.artifactory_generator.SimpleArtifactoryFinder import SimpleArtifacto
 
 
 class SubscriptionManager(SimpleArtifactoryFinder):
+    """Locates Moovit's synchronous "does the user own a subscription?" check.
+
+    The holder persists the owned SKUs under the SharedPreferences key
+    "subscribed_skus", and the check is a no-argument boolean that answers
+    whether that set is non-empty. Up to 5.201.1 it lived in a subscriptions
+    manager that ORed in a Boolean remote flag first; since 5.201.6 it is
+    SubscriptionBridgeImpl's, which only reads the set.
+
+    Anchors:
+      class  -- the persisted preference key "subscribed_skus" (a request class
+                names it too, but has no ()Z, so it never matches)
+      method -- the only public final ()Z whose body asks the SKU collection
+                isEmpty()
+    """
+
     IS_SUBSCRIBED_RE = re.compile(
-        r'.method public final (?P<method_name>\w+)(?P<sig>\(\)Z)(?:(?!end method)[\s\S])*?booleanValue')
+        r'\.method public final (?P<method_name>\w+)(?P<sig>\(\)Z)'
+        r'(?:(?!\.end method)[\s\S])*?Ljava/util/Collection;->isEmpty\(\)Z')
 
     def __init__(self, args):
         super().__init__(args)
