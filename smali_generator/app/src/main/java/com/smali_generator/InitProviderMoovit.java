@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import com.smali_generator.patches.SubscriptionManager;
+import com.smali_generator.patches.IsSubscribedStream;
 import com.smali_generator.patches.PremiumState;
 import com.smali_generator.patches.PremiumFeaturePackages;
 import com.smali_generator.patches.BlockPaywall;
@@ -46,6 +47,7 @@ public class InitProviderMoovit extends ContentProvider {
             new BindServiceHook(),
             // premium / subscription state
             new SubscriptionManager(),
+            new IsSubscribedStream(),
             new PremiumState(),
             new PremiumFeaturePackages(),
             // paywall / feature gates

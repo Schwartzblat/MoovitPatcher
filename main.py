@@ -4,6 +4,7 @@ from pathlib import Path
 from stitch import Stitch
 from stitch.common import ExternalModule
 from artifactory_generator.subscription_manager import SubscriptionManager
+from artifactory_generator.is_subscribed_stream import IsSubscribedStream
 # premium / subscription state
 from artifactory_generator.premium_state import PremiumState
 from artifactory_generator.premium_feature_packages import PremiumFeaturePackages
@@ -77,6 +78,7 @@ def main():
         external_modules.append(ExternalModule(Path(args.paywall), PAYWALL_PROVIDER))
     artifactory_list = [
         SubscriptionManager(args),
+        IsSubscribedStream(args),
         PremiumState(args),
         PremiumFeaturePackages(args),
         BlockPaywall(args),

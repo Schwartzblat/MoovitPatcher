@@ -17,6 +17,7 @@ from artifactory_generator.app_ad_unit_id_resolver import AppAdUnitIdResolver
 from artifactory_generator.app_ad_view_show import AppAdViewShow
 from artifactory_generator.app_map_ads_layer import AppMapAdsLayer
 from artifactory_generator.block_paywall import BlockPaywall
+from artifactory_generator.is_subscribed_stream import IsSubscribedStream
 from artifactory_generator.premium_feature_packages import PremiumFeaturePackages
 from artifactory_generator.subscription_manager import SubscriptionManager
 
@@ -129,6 +130,91 @@ def test_subscription_manager_finds_the_subscription_bridge(tmp_path):
         'SUBSCRIPTION_MANAGER_METHOD_NAME': 'a',
         'SUBSCRIPTION_MANAGER_METHOD_SIG': '()Z',
     }
+
+
+# --- IsSubscribedStream -----------------------------------------------------
+
+STREAM_CONTINUATION = 'com/moovit/domain/subscription/IsSubscribedStreamUseCase$invoke$$inlined$map$1$2$1'
+
+# 5.201.6+: the collector inside IsSubscribedStreamUseCase that maps the
+# entitlements to "is the list non-empty" and emits that downstream.
+IS_SUBSCRIBED_COLLECTOR = f'''.class public final Lcom/moovit/domain/subscription/b;
+.super Ljava/lang/Object;
+
+# interfaces
+.implements Lv97;
+
+.field public final synthetic a:Lv97;
+
+.method public final emit(Ljava/lang/Object;Lx04;)Ljava/lang/Object;
+    .locals 6
+    instance-of v0, p2, L{STREAM_CONTINUATION};
+    new-instance v0, L{STREAM_CONTINUATION};
+    invoke-static {{p2}}, Lkotlin/b;->b(Ljava/lang/Object;)V
+    .line 3
+    check-cast p1, Lu96;
+    .line 4
+    iget-object p1, p1, Lu96;->a:Ljava/util/List;
+    .line 5
+    invoke-interface {{p1}}, Ljava/util/Collection;->isEmpty()Z
+    move-result p1
+    xor-int/2addr p1, v3
+    invoke-static {{p1}}, Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean;
+    move-result-object p1
+    iget-object p0, p0, Lcom/moovit/domain/subscription/b;->a:Lv97;
+    invoke-interface {{p0, p1, v0}}, Lv97;->emit(Ljava/lang/Object;Lx04;)Ljava/lang/Object;
+    move-result-object p0
+    return-object p0
+.end method
+'''
+
+# The continuation class itself names the anchor but maps nothing.
+IS_SUBSCRIBED_CONTINUATION = f'''.class public final L{STREAM_CONTINUATION};
+.super Lkotlin/coroutines/jvm/internal/ContinuationImpl;
+
+.field public label:I
+
+.method public final invokeSuspend(Ljava/lang/Object;)Ljava/lang/Object;
+    .locals 1
+    iput-object p1, p0, L{STREAM_CONTINUATION};->result:Ljava/lang/Object;
+    return-object p0
+.end method
+'''
+
+# SyncPurchasesUseCase makes the same isEmpty() check, without the anchor.
+SYNC_PURCHASES = '''.class public final Lcom/moovit/domain/subscription/d;
+.super Ljava/lang/Object;
+
+.method public final a(Lkotlin/coroutines/jvm/internal/ContinuationImpl;)Ljava/lang/Object;
+    .locals 4
+    check-cast p1, Lu96;
+    iget-object p0, p1, Lu96;->a:Ljava/util/List;
+    invoke-interface {p0}, Ljava/util/Collection;->isEmpty()Z
+    move-result p0
+    return-object p0
+.end method
+'''
+
+
+def test_is_subscribed_stream_finds_the_entitlements_mapper(tmp_path):
+    artifacts = find(tmp_path, IsSubscribedStream(None), {
+        STREAM_CONTINUATION: IS_SUBSCRIBED_CONTINUATION,
+        'com/moovit/domain/subscription/d': SYNC_PURCHASES,
+        'com/moovit/domain/subscription/b': IS_SUBSCRIBED_COLLECTOR,
+    })
+    assert artifacts == {
+        'IS_SUBSCRIBED_STREAM_CLASS_NAME': 'com.moovit.domain.subscription.b',
+        'IS_SUBSCRIBED_STREAM_METHOD_NAME': 'emit',
+        'IS_SUBSCRIBED_STREAM_METHOD_SIG': '(Ljava/lang/Object;Lx04;)Ljava/lang/Object;',
+        'IS_SUBSCRIBED_STREAM_VALUE_CLASS_NAME': 'u96',
+    }
+
+
+def test_is_subscribed_stream_ignores_the_same_check_elsewhere(tmp_path):
+    artifacts = find(tmp_path, IsSubscribedStream(None), {
+        'com/moovit/domain/subscription/d': SYNC_PURCHASES,
+    })
+    assert artifacts == {}
 
 
 # --- PremiumFeaturePackages -------------------------------------------------
